@@ -28,6 +28,7 @@
             android:layout_width="wrap_content"
             android:layout_height="@dimen/notification_item_msg_height"
             android:minHeight="@dimen/notification_item_msg_height"
+            android:autoLink="web"
             android:layout_alignStart="@+id/ni_titletv"
             android:layout_below="@+id/ni_titletv"
             android:layout_marginStart="10dp"

@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -25,9 +27,14 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
+import java.util.Date;
 
 public class NotificationsActivity extends AppCompatActivity implements NotificationsListItemAdapter.NotificationItemClickListener{
 
+
+    private static final long QUERY_LIMIT = 6;
+    private String lastFetchedUID="";
+    private FloatingActionButton fab;
     RecyclerView notifsListRV;
     ProgressBar progressBar;
 
@@ -37,6 +44,8 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
     NotificationsListItemAdapter notifListAdapter;
 
     boolean isNotificationSet;
+    private Date lastFetchedTime;
+    private int lastSize=0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,12 +56,31 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
 
         notifsListRV = findViewById(R.id.notifications_list_rv);
 
-        Query query = notifsRef.orderBy("timestamp",Query.Direction.DESCENDING);
-        setUpNotifsList(query);
+        fab=findViewById(R.id.fab);
+        fab.setVisibility(View.GONE);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Query query=getQuery();
+                setupNotifsList2(query);
+            }
+        });
+
+        Query query = getQuery();
+        initRecycler();
+        setupNotifsList2(query);
     }
 
-    private void setUpNotifsList(Query pQuery){
-
+    private Query getQuery() {
+        Query query;
+        if(!lastFetchedUID.equals(""))
+            query=notifsRef.orderBy("timestamp",Query.Direction.DESCENDING).startAfter(lastFetchedTime).limit(QUERY_LIMIT);
+        else
+            query=notifsRef.orderBy("timestamp",Query.Direction.DESCENDING).limit(QUERY_LIMIT);
+        return query;
+    }
+    private void initRecycler()
+    {
         notifications = new ArrayList<>();
         progressBar = findViewById(R.id.nfs_progressBar);
 
@@ -63,63 +91,48 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
 
 
         progressBar.setVisibility(View.VISIBLE);
-        setUpProductListIni(pQuery, null,1, 10);
     }
 
-
-    private void setUpProductListIni(final Query query, @Nullable final DocumentSnapshot startAfterSnapshot, @Nullable final int recursiveDepth, final int page_limit){
-
-        Query locQuery = query;
-        if(startAfterSnapshot!=null) {
-            locQuery = locQuery.startAfter(startAfterSnapshot);
-        }
-        if(page_limit>0){
-            locQuery = locQuery.limit(page_limit);
-        }
+    public void setupNotifsList2(Query locQuery){
 
         locQuery.get().addOnCompleteListener(new OnCompleteListener<QuerySnapshot>() {
             @Override
             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                 if(task.isSuccessful()){
-                     QuerySnapshot snapshots = task.getResult();
-                     if(snapshots.size()>0){
-                         boolean isChange = false;
-                         for (QueryDocumentSnapshot document : snapshots) {
-                             CulfestNotification cur = document.toObject(CulfestNotification.class);
-                             cur.setupNid(document.getId());
-                             if(notifications.contains(cur)) {
-                                 isChange = true;
-                                 notifications.set(notifications.indexOf(cur), cur);
-                             }else {
-                                 notifications.add(cur);
-                             }
-                             notifListAdapter.notifyDataSetChanged();
-                             progressBar.setVisibility(View.GONE);
-                         }
-                         if(snapshots.size()==page_limit&&!isChange){
-                             if(recursiveDepth<50) {
-                                 setUpProductListIni(query, snapshots.getDocuments().get(page_limit - 1), recursiveDepth + 1, page_limit);
-                             }else{
-//                                 setUpProductListIni(query, snapshots.getDocuments().get(page_limit - 1), recursiveDepth + 1, 0);
-                             }
-                         }else{
-                             isNotificationSet = true;
-                             notifications_count = notifications.size();
-                         }
-                     }else{
-                         if(notifications.size()==0){
-                             showNoticeAlert(NotificationsActivity.this, "Some Error Occurred", "Unable to retrieve notifications",true);
-                         }else{
-                             isNotificationSet = true;
-                             notifications_count = notifications.size();
-                         }
-                     }
+                    fab.setVisibility(View.VISIBLE);
+                    QuerySnapshot snapshots = task.getResult();
+                    if(snapshots.size()>0){
+                        boolean isChange = false;
+                        for (QueryDocumentSnapshot document : snapshots) {
+                            lastFetchedUID=document.getId();
+                            Date currentTime=(Date) document.get("timestamp");
+                            lastFetchedTime=currentTime;
+                            CulfestNotification cur = document.toObject(CulfestNotification.class);
+                            cur.setupNid(document.getId());
+                            if(notifications.contains(cur)) {
+                                isChange = true;
+                                notifications.set(notifications.indexOf(cur), cur);
+                            }else {
+                                notifications.add(cur);
+                            }
+                            notifListAdapter.notifyDataSetChanged();
+                            progressBar.setVisibility(View.GONE);
+                            notifsListRV.scrollToPosition(notifications.size()-1);
+                        }
+                    }else{
+                        if(notifications.size()==0){
+                            showNoticeAlert(NotificationsActivity.this, "Some Error Occurred", "Unable to retrieve notifications",true);
+                        }else{
+                            isNotificationSet = true;
+                            fab.setVisibility(View.GONE);
+                            notifications_count = notifications.size();
+                        }
+                    }
                 }else{
                     showNoticeAlert(NotificationsActivity.this,"Error Occurred","Please try again later",true);
                 }
             }
         });
-
 
     }
 
