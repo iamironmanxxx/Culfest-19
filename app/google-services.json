@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "620706454592",
+    "firebase_url": "https://culfest-d6683.firebaseio.com",
+    "project_id": "culfest-d6683",
+    "storage_bucket": "culfest-d6683.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:620706454592:android:72ec82dcc4ca1120",
+        "android_client_info": {
+          "package_name": "com.culfest.culfest2k19"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "620706454592-nsreuohr0eo27fh0ebau4drn8mv1k4p5.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.culfest.culfest2k19",
+            "certificate_hash": "455fa2588c5b52f41bf0c0a3fa401feb0057b93b"
+          }
+        },
+        {
+          "client_id": "620706454592-rjh6viv5fecuqrti17vp31802f2v95hs.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDLx0p23_IZfsqIfPaL9XrYgp2mqVQcwYo"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "620706454592-rjh6viv5fecuqrti17vp31802f2v95hs.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
