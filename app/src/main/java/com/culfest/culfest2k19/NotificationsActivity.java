@@ -117,7 +117,6 @@ public class NotificationsActivity extends AppCompatActivity implements Notifica
                             }
                             notifListAdapter.notifyDataSetChanged();
                             progressBar.setVisibility(View.GONE);
-                            notifsListRV.scrollToPosition(notifications.size()-1);
                         }
                     }else{
                         if(notifications.size()==0){
